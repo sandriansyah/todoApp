@@ -1,72 +1,169 @@
-import * as React from "react";
-import { Text,Box,Heading,Input,Button,Flex,ScrollView,Center,KeyboardAvoidingView,Icon,IconButton} from "native-base";
+import React,{useState,useEffect} from "react";
+import { Text,
+        Box,
+        Heading,
+        Input,
+        Button,
+        Flex,
+        ScrollView,
+        Center,
+        KeyboardAvoidingView,
+        Icon,
+        IconButton,
+        Modal,
+        HStack,
+        Alert} from "native-base";
 import {StyleSheet,FlatList} from "react-native"
 import {vh,vw} from "react-native-units"
 
 import { Entypo,Feather} from "@expo/vector-icons"
 
+import axios from "axios";
+
 export default function Todo(){
+
+    const [showModal, setShowModal] = useState(false);
+    const [todo,setTodo] = useState({});
+    const [newTodo,setNewTodo] = useState({
+        todoName:"",
+        statusTodo:"",
+    })
+    const [update,setUpdate] =useState({
+        todoName:"",
+    })
+    const [updateStatus,setUpdateStatus] = useState({
+        statusTodo:""
+    })
+
+    const [idUpdate,setIdUpdate] =useState(null)
+    
+
+    const path = "https://api.kontenbase.com/query/api/v1/a05fac93-063a-4217-9fb6-e822d1e790d2/todo"
+
+
+    useEffect(()=>{
+        getTodo()
+    },[])
+
+    const handleMOdalEdit = async(id)=>{
+        try {
+            setShowModal(true)
+            setIdUpdate(id)
+            console.log(idUpdate);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const getTodo = async ()=>{
+        try {
+            const response = await axios.get(path)
+            setTodo(response.data)
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleTodo = async ()=>{
+        try {
+            const response = await axios.post(path,newTodo)
+            console.log(response.data);
+            getTodo()
+        } catch (error) {
+            console.log(error);
+            <Alert status={"error"}/>
+        }
+    }
+
+    const handleDelete = async(id)=>{
+        try {
+            const data = id
+            await axios.delete(`https://api.kontenbase.com/query/api/v1/a05fac93-063a-4217-9fb6-e822d1e790d2/todo/${data}`)
+            getTodo()
+        } catch (error) {
+            // console.log(error);
+        }
+    }
+
+    const handleUpdate = async()=>{
+        try {
+            const response = await axios.patch(`https://api.kontenbase.com/query/api/v1/a05fac93-063a-4217-9fb6-e822d1e790d2/todo/${idUpdate}`,update)
+            setShowModal(false)
+            getTodo()
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleChecklist = async(id)=>{
+        try {
+            console.log(id);
+            const response = await axios.patch(`https://api.kontenbase.com/query/api/v1/a05fac93-063a-4217-9fb6-e822d1e790d2/todo/${id}`,{statusTodo:"true"})
+            
+            getTodo()
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     return(    
                 <Box bg="primary.500" flex={1}>
+
+            <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+                <Modal.Body bg="primary.50" borderRadius="10px" width="300px" mt="200px">
+                    <Text bold mb="5px" color="primary.700"  fontSize="2xl" > Edit Todo </Text>
+                    <Input bg="muted.100"  mb="20px"
+                    onChangeText={(Text)=> setUpdate({todoName:Text}) }
+                    value={update}
+                    />
+                    <HStack space={2} justifyContent="flex-end">
+                        <Button bg="danger.300" onPress={() => setShowModal(false)}>
+                            <Text >Cancel</Text>
+                        </Button>
+                        <Button
+                        onPress={()=> handleUpdate()}
+                        >
+                            <Text>Edit</Text>
+                        </Button>
+                    </HStack>
+                </Modal.Body>
+            </Modal>
+
                     <Heading style={styles.content} color="primary.50" fontSize="5xl">
                         Todo List
                     </Heading>
-                    <Box style={styles.front} bg="primary.600" >
+                    <Box height="550px" style={styles.front} bg="primary.600" >
                         
                             <FlatList 
-                            data={[
-                                {
-                                id:1,
-                                todo: "Sholat Shubuh",
-                                isDone:"done",
-                            },
-                            {
-                                id:2,
-                                todo: "sarapan",
-                                isDone:"done",
-                            },
-                            {
-                                id:3,
-                                todo: "Sholat Shubuh",
-                                isDone:"done",
-                            },
-                            {
-                                id:4,
-                                todo: "sarapan",
-                                isDone:"done",
-                            },
-                            {
-                                id:5,
-                                todo: "Sholat Shubuh",
-                                isDone:"done",
-                            },
-                            {
-                                id:6,
-                                todo: "sarapan",
-                                isDone:"done",
-                            },
-                            {
-                                id:7,
-                                todo: "Sholat Shubuh",
-                                isDone:"done",
-                            },
-                            {
-                                id:8,
-                                todo: "sarapan",
-                                isDone:"done",
-                            },
-                        ]}
+                            data= {todo}
                             renderItem={({item})=>
                             <ScrollView>
                                 <Box style={styles.containerTodo}>
                                 
-                                    <Flex direction="row">
+                                    <HStack space={2} justifyContent="space-between" >
                                         <Center>
-                                            <Text style={styles.titleTodo} fontSize="2xl" color="white">{item.todo}</Text>
+                                            {item.statusTodo == "true"?<Text style={styles.titleTodo} fontSize="2xl"  color="tertiary.400">{item.todoName}</Text>:
+                                            <Text style={styles.titleTodo} fontSize="2xl"  color="white">{item.todoName}</Text>
+                                            }
+                                            
                                         </Center>
-                                        <Center>
-                                            {/* <Button padding={1} style={styles.button} ><Text fontSize="xs">done</Text></Button> */}
+
+                                        <HStack>
+                                        
+                                            {item.statusTodo == "true"?
                                             <IconButton 
+                                            bg="tertiary.400"
+                                            style={{marginRight:5}}
+                                            icon={
+                                                <Icon
+                                                as={Feather}
+                                                name="check"
+                                                color="white"
+                                                size="sm"
+                                                />
+                                            } />:
+                                            <IconButton 
+                                            onPress={()=>handleChecklist(item._id)}
                                             bg="white"
                                             style={{marginRight:5}}
                                             icon={
@@ -77,10 +174,11 @@ export default function Todo(){
                                                 size="sm"
                                                 />
                                             } />
-                                        </Center>
-                                        <Center>
-                                            {/* <Button padding={1} style={styles.button}><Text fontSize="xs">edit</Text></Button> */}
+                                            }
+                                            
+                                            {item.statusTodo == "true"?null:
                                             <IconButton
+                                            onPress={() => handleMOdalEdit(item._id)}
                                             bg="white" 
                                             style={{marginRight:5}}
                                             icon={
@@ -91,10 +189,10 @@ export default function Todo(){
                                                 size="sm"
                                                 />
                                             } />
-                                        </Center>
-                                        <Center>
-                                            {/* <Button padding={1} bg="danger.300" style={styles.button}><Text fontSize="xs">delete</Text></Button> */}
-                                            <IconButton 
+                                            }
+                                            
+                                            <IconButton
+                                            onPress={()=> handleDelete(item._id)}
                                             bg="white"
                                             icon={
                                                 <Icon
@@ -104,18 +202,23 @@ export default function Todo(){
                                                 size="sm"
                                                 />
                                             } />
-                                        </Center>
-                                    </Flex>
+                                        </HStack>
+                                        
+                                    </HStack>
                                 </Box>
                             </ScrollView>
                             }
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item._id}
                             />
                     </Box>
                     <KeyboardAvoidingView>
                         <Flex direction="row" px="3"bg="primary.600" height="125px" py="5">
-                            <Input placeholder="input add todo here" bg="primary.100" height="40px" width="81%" me="2" />
+                            <Input placeholder="input add todo here" bg="primary.100" height="40px" width="81%" me="2"
+                            onChangeText={(Text)=> setNewTodo({todoName:Text,statusTodo:"false"}) }
+                            value={newTodo}
+                            />
                             <IconButton
+                                onPress={handleTodo}
                                 bg="rose.700" 
                                 height="40px"
                                 width="60px"
@@ -142,7 +245,7 @@ const styles= StyleSheet.create({
         marginTop:50,
     },
     front:{
-        height: vh(70),
+        // height: vh(70),
         borderTopLeftRadius : 60,
         borderTopRightRadius : 60,
         
@@ -156,7 +259,7 @@ const styles= StyleSheet.create({
     },
     titleTodo:{
         height:40,
-        width: vw(60),
+        // width: vw(60),
         textAlign:"justify",
     },
     flexTitle:{

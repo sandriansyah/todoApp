@@ -10,7 +10,7 @@ export default function Kalkulator(){
             setDisplay(angka)
         }else{
             setDisplay(display + '' + angka)
-            console.log(display);
+         
         }       
     }
 
