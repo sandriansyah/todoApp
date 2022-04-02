@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from "react";
+import React,{useState,useEffect,useRef} from "react";
 import { Text,
         Box,
         Heading,
@@ -34,9 +34,7 @@ export default function Todo(){
     const [updateStatus,setUpdateStatus] = useState({
         statusTodo:""
     })
-
     const [idUpdate,setIdUpdate] =useState(null)
-    
 
     const path = "https://api.kontenbase.com/query/api/v1/a05fac93-063a-4217-9fb6-e822d1e790d2/todo"
 
@@ -134,9 +132,9 @@ export default function Todo(){
                     </Heading>
                     <Box height="550px" style={styles.front} bg="primary.600" >
                         
-                            <FlatList 
+                            <FlatList  
                             data= {todo}
-                            renderItem={({item})=>
+                            renderItem={({item})=> 
                             <ScrollView>
                                 <Box style={styles.containerTodo}>
                                 
@@ -211,7 +209,7 @@ export default function Todo(){
                             keyExtractor={(item) => item._id}
                             />
                     </Box>
-                    <KeyboardAvoidingView>
+                    <KeyboardAvoidingView behavior="position">
                         <Flex direction="row" px="3"bg="primary.600" height="125px" py="5">
                             <Input placeholder="input add todo here" bg="primary.100" height="40px" width="81%" me="2"
                             onChangeText={(Text)=> setNewTodo({todoName:Text,statusTodo:"false"}) }

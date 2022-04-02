@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Text, Box, Pressable } from "native-base";
+import {Image} from "native-base"
 
 // Add Props in Hello({navigation})
 export default function Hello({ navigation }) {
